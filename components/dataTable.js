@@ -1,11 +1,11 @@
-// API Configuration
-const API_BASE_URL = 'http://localhost:3000/api';
-
+// API Configuration — single global value to avoid duplicate const declarations
+window.API_BASE_URL = window.API_BASE_URL || `${window.location.origin}/api`;
+ 
 // API Service
 class ApiService {
     static async getProducts(page = 1, limit = 10) {
         try {
-            const url = `${API_BASE_URL}/products?page=${page}&limit=${limit}`;
+            const url = `${window.API_BASE_URL}/products?page=${page}&limit=${limit}`;
             console.log('Fetching products from:', url);
             const response = await fetch(url, {
                 method: 'GET',
@@ -268,7 +268,7 @@ class CustomDataTable extends HTMLElement {
             this.hideLoading();
         } catch (error) {
             console.error('Error loading data:', error);
-            this.showError('Failed to load data. Make sure the server is running on http://localhost:3000');
+            this.showError(`Failed to load data. Make sure the server is running at ${window.location.origin}`);
             this.hideLoading();
         } finally {
             this.isLoading = false;

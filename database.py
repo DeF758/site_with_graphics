@@ -200,7 +200,7 @@ class Database:
                 self.return_connection(conn)
 
     def seed_data(self, conn, cursor):
-        """Seed database with sample data"""
+        """Seed database with sample data (dates distributed across past ~7 months)"""
         categories = ['Electronics', 'Clothing', 'Food', 'Furniture', 'Books']
         statuses = ['Completed', 'Pending', 'Cancelled']
         
@@ -214,7 +214,9 @@ class Database:
             category = random.choice(categories)
             status = random.choice(statuses)
             amount = round(random.uniform(10, 1000), 2)
-            date = datetime.now() - timedelta(days=random.randint(0, 30))
+            # distribute dates roughly across the last ~7 months
+            days_back = random.randint(0, 210)  # ~0..7 months
+            date_val = datetime.now() - timedelta(days=days_back)
             rating = random.randint(1, 5)
             
             products.append((
@@ -222,7 +224,7 @@ class Database:
                 category,
                 status,
                 amount,
-                date.date(),
+                date_val.date(),
                 rating
             ))
         
@@ -416,7 +418,7 @@ class Database:
                 self.return_connection(conn)
 
     def get_line_chart_data(self):
-        """Get line chart data (sales by month)"""
+        """Get line chart data (sales by day) - returns 10 Oct to 10 Nov with 3-day intervals"""
         conn = None
         try:
             conn = self.get_connection()
@@ -424,13 +426,18 @@ class Database:
             
             cursor.execute("""
                 SELECT 
-                    TO_CHAR(date, 'YYYY-MM') as month,
-                    SUM(amount) as total
-                FROM products
-                WHERE status = 'Completed'
-                GROUP BY month
-                ORDER BY month
-                LIMIT 7
+                    to_char(m, 'YYYY-MM-DD') as day,
+                    COALESCE(SUM(p.amount), 0) as total
+                FROM generate_series(
+                    CURRENT_DATE - INTERVAL '31 days',
+                    CURRENT_DATE,
+                    INTERVAL '3 day'
+                ) AS m
+                LEFT JOIN products p
+                    ON DATE(p.date) = DATE(m)
+                    AND p.status = 'Completed'
+                GROUP BY m
+                ORDER BY m;
             """)
             
             rows = cursor.fetchall()
@@ -438,15 +445,10 @@ class Database:
             labels = []
             data = []
             for row in rows:
-                month_str = row[0]
-                date_obj = datetime.strptime(month_str + '-01', '%Y-%m-%d')
-                labels.append(date_obj.strftime('%b'))
+                day_str = row[0]  # 'YYYY-MM-DD'
+                date_obj = datetime.strptime(day_str, '%Y-%m-%d')
+                labels.append(date_obj.strftime('%d %b'))
                 data.append(float(row[1]))
-            
-            # If no data, return empty arrays
-            if not labels:
-                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul']
-                data = [0, 0, 0, 0, 0, 0, 0]
             
             cursor.close()
             return {'labels': labels, 'data': data}
