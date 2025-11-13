@@ -94,7 +94,7 @@ def get_products():
         print(f'Error fetching products: {e}')
         import traceback
         traceback.print_exc()
-        return jsonify({'error': 'Failed to fetch products'}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/products/<int:product_id>', methods=['GET'])
 def get_product(product_id):
