@@ -16,7 +16,26 @@
 - PostgreSQL
 - Рекомендуется использовать виртуальное окружение (venv)
 
-## Установка
+## Быстрый запуск
+
+1. Клонируем репозиторий:
+
+```bash
+git clone https://github.com/DeF758/site_with_graphics.git
+cd site_with_graphics
+```
+2. Создаём .env (Инструкция ниже)
+
+3. Запускаем Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+4. Открываем в браузере:
+http://localhost:3000/index.html
+
+## Ручная установка
 
 1. Создайте и активируйте виртуальное окружение (рекомендуется):
 ```bash
