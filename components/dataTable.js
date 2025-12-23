@@ -41,13 +41,13 @@ class CustomDataTable extends HTMLElement {
     }
 
     async connectedCallback() {
-        this.attachShadow({ mode: 'open' });
+        // Render into light DOM so DevTools / XPath can find the table
         this.render();
         await this.loadData();
     }
 
     render() {
-        this.shadowRoot.innerHTML = `
+        this.innerHTML = `
             <style>
                 .loading {
                     text-align: center;
@@ -223,9 +223,9 @@ class CustomDataTable extends HTMLElement {
     }
 
     setupEventListeners() {
-        const prevButton = this.shadowRoot.querySelector('.prev-button');
-        const nextButton = this.shadowRoot.querySelector('.next-button');
-        const rowsPerPageSelect = this.shadowRoot.getElementById('rows-per-page');
+        const prevButton = this.querySelector('.prev-button');
+        const nextButton = this.querySelector('.next-button');
+        const rowsPerPageSelect = this.querySelector('#rows-per-page');
 
         prevButton?.addEventListener('click', () => {
             if (this.currentPage > 1) {
@@ -276,9 +276,9 @@ class CustomDataTable extends HTMLElement {
     }
 
     renderTable(data) {
-        const tbody = this.shadowRoot.getElementById('tbody');
-        const table = this.shadowRoot.getElementById('table');
-        const pagination = this.shadowRoot.getElementById('pagination');
+        const tbody = this.querySelector('#tbody');
+        const table = this.querySelector('#table');
+        const pagination = this.querySelector('#pagination');
 
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">No data available</td></tr>';
@@ -303,16 +303,21 @@ class CustomDataTable extends HTMLElement {
         table.style.display = 'table';
         pagination.style.display = 'flex';
         
-        // Replace feather icons
+        // Replace feather icons within this component (light DOM)
         setTimeout(() => {
-            feather.replace(this.shadowRoot);
+            try {
+                // Replace icons globally; scoping options are limited for feather
+                feather.replace();
+            } catch (e) {
+                console.warn('Feather replace failed:', e);
+            }
         }, 100);
     }
 
     updatePagination() {
-        const prevButton = this.shadowRoot.querySelector('.prev-button');
-        const nextButton = this.shadowRoot.querySelector('.next-button');
-        const pageNumbers = this.shadowRoot.getElementById('page-numbers');
+        const prevButton = this.querySelector('.prev-button');
+        const nextButton = this.querySelector('.next-button');
+        const pageNumbers = this.querySelector('#page-numbers');
 
         prevButton.disabled = this.currentPage === 1;
         nextButton.disabled = this.currentPage === this.totalPages;
@@ -353,10 +358,10 @@ class CustomDataTable extends HTMLElement {
     }
 
     showLoading() {
-        const loading = this.shadowRoot.getElementById('loading');
-        const table = this.shadowRoot.getElementById('table');
-        const pagination = this.shadowRoot.getElementById('pagination');
-        const error = this.shadowRoot.getElementById('error');
+        const loading = this.querySelector('#loading');
+        const table = this.querySelector('#table');
+        const pagination = this.querySelector('#pagination');
+        const error = this.querySelector('#error');
         
         loading.style.display = 'block';
         table.style.display = 'none';
@@ -365,14 +370,14 @@ class CustomDataTable extends HTMLElement {
     }
 
     hideLoading() {
-        const loading = this.shadowRoot.getElementById('loading');
+        const loading = this.querySelector('#loading');
         loading.style.display = 'none';
     }
 
     showError(message) {
-        const error = this.shadowRoot.getElementById('error');
-        const table = this.shadowRoot.getElementById('table');
-        const pagination = this.shadowRoot.getElementById('pagination');
+        const error = this.querySelector('#error');
+        const table = this.querySelector('#table');
+        const pagination = this.querySelector('#pagination');
         
         error.textContent = message;
         error.style.display = 'block';
