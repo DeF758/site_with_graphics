@@ -24,7 +24,7 @@
 git clone https://github.com/DeF758/site_with_graphics.git
 cd site_with_graphics
 ```
-2. Создаём .env (Инструкция ниже)
+2. Создаём .env (Инструкция ниже в разделе "Настройка .env")
 
 3. Запускаем Docker Compose:
 
